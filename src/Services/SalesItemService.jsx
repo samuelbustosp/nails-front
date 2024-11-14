@@ -1,8 +1,8 @@
 import axios from "axios";
 import { API_URL } from "../App.config";
 
-export async function obtenerLineas(consulta, page, pageSize) {
-  const urlBase = API_URL + "/lineasPageQuery";
+const urlBase = API_URL + "/articulosPageQuery";
+export async function getSalesItem(consulta, page, pageSize) {
   try {
     const { data } = await axios({
       method: "GET",
@@ -10,52 +10,37 @@ export async function obtenerLineas(consulta, page, pageSize) {
     });
     return data;
   } catch (error) {
-    console.error("Error buscando lineas:", error);
+    console.error("Error buscando articulos:", error);
     throw error;
   }
 }
 
-export async function obtenerLineas2() {
+export async function getSalesItemById(id) {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/lineas`,
+      url: `${API_URL}/articulos/${id}`,
     });
     return data;
   } catch (error) {
-    console.error("Error buscando lineas:", error);
+    console.error("Error en buscar una articulo:", error);
     throw error;
   }
 }
 
-export async function obtenerLinea(id) {
+export async function newSalesItem(model) {
   try {
-    // `${urlBase}/${id}`
-    const { data } = await axios({
-      method: "GET",
-      url: `${API_URL}/linea/${id}`,
-    });
-    console.log(data);
-    return data;
-  } catch (error) {
-    console.error("Error en buscar una linea:", error);
-    throw error;
-  }
-}
-
-export async function newLinea(linea) {
-  try {
-    if (linea.id > 0) {
+    if (model.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/linea/${linea.id}`,
-        data: linea,
+        url: `${API_URL}/articulos/${model.id}`,
+        data: model,
       });
     } else {
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/linea`,
-        data: linea,
+        url: `${API_URL}/articulos`,
+        data: model,
       });
     }
 
@@ -75,8 +60,8 @@ export async function newLinea(linea) {
   }
 }
 
-export async function eliminarLineas(id) {
-  const urlBase = API_URL + "/lineaEliminar";
+export async function deleteSalesItem(id) {
+  const urlBase = API_URL + "/articulosEliminar";
   const { data } = await axios({
     method: "PUT",
     url: `${urlBase}/${id}`,

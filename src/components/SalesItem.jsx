@@ -1,25 +1,25 @@
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  newArticuloVenta,
-  obtenerArticuloVenta,
-} from "../Services/ArticuloVentaService";
-import { obtenerLineas2 } from "../Services/LineaService";
+  newSalesItem,
+  getSalesItemById,
+} from "../Services/SalesItemService";
 
-export default function ArticuloVenta({ title }) {
+import { obtenerLineas2 } from "../Services/LineService";
+
+export default function SalesItem({ title }) {
   let navegacion = useNavigate();
 
   const { id } = useParams();
 
-  const [articulo, setArticulo] = useState({
-    denominacion: "",
-    linea: 0,
+  const [item, setItem] = useState({
+    denomination: "",
+    line: 0,
   });
 
-  const [listaLineas, setListaLineas] = useState([]);
-  const [selectedLinea, setSelectedLinea] = useState({});
-  const { denominacion, linea } = articulo;
+  const [lineList, setLineList] = useState([]);
+  const [selectedLine, setSelectedLine] = useState({});
+  const { denomination, line } = item;
 
   useEffect(() => {
     cargarModel();
@@ -29,33 +29,32 @@ export default function ArticuloVenta({ title }) {
   const cargarModel = async () => {
     if (id > 0) {
       console.log(id);
-      const resultado = await obtenerArticuloVenta(id);
-      setArticulo(resultado);
-      setSelectedLinea(resultado.linea);
+      const resultado = await getSalesItemById(id);
+      setItem(resultado);
+      setSelectedLine(resultado.line);
     }
   };
 
   const cargarLineas = async () => {
     console.log(id);
-
     const resultado = await obtenerLineas2();
-    setListaLineas(resultado);
+    setLineList(resultado);
   };
 
   const onInputChange = ({ target: { name, value } }) => {
     //spread operator ... (expandir los atributos)
-    setArticulo({ ...articulo, [name]: value });
+    setItem({ ...item, [name]: value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
 
     const data = {
-      ...articulo,
-      linea: selectedLinea, // Asumiendo que la línea seleccionada es el id de la línea
+      ...item,
+      line: selectedLine, // Asumiendo que la línea seleccionada es el id de la línea
     };
-    window.alert("id lina" + selectedLinea);
-    newArticuloVenta(data);
+    window.alert("id linea" + selectedLine);
+    newSalesItem(data);
     // Redirigimos a la pagina de inicio
     navegacion("/articuloList");
   };
@@ -79,21 +78,21 @@ export default function ArticuloVenta({ title }) {
             id="denominacion"
             name="denominacion"
             required={true}
-            value={denominacion}
+            value={denomination}
             onChange={(e) => onInputChange(e)}
           />
 
           <label htmlFor="listaLineas">Selecciona una linea:</label>
           <select
             id="listaLineas"
-            value={selectedLinea}
+            value={selectedLine}
             required={true}
-            onChange={(e) => setSelectedLinea(e.target.value)}
+            onChange={(e) => setSelectedLine(e.target.value)}
           >
             <option value="">Seleccione...</option>
-            {listaLineas.map((linea) => (
-              <option key={linea.id} value={linea.id}>
-                {linea.denominacion}
+            {lineList.map((line) => (
+              <option key={line.id} value={line.id}>
+                {line.denomination}
               </option>
             ))}
           </select>

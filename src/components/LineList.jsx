@@ -1,40 +1,34 @@
 import React, { useContext, useEffect, useState } from "react";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
 import { Link } from "react-router-dom";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
+import { LineaContext } from "./LineaContext";
+import { getLine, deleteLine } from "../Services/LineService";
 
-import {
-  obtenerArticulosVenta,
-  eliminarArticulosVenta,
-} from "../Services/ArticuloVentaService";
-import { ArticuloVentaContext } from "./ArticuloVentaContext";
+export default function LineList() {
+  const { lines, setLines } = useContext(LineaContext);
 
-export default function ListadoArticulosVenta() {
-  const { articulos, setArticulos } = useContext(ArticuloVentaContext);
-
-  const [consulta, setConsulta] = useState("");
-
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
-
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   }); //se utiliza para el orden
 
   useEffect(() => {
-    getDatos();
-  }, [page, pageSize, consulta]);
+    getData();
+  }, [page, pageSize, query]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  const getDatos = async () => {
+  const getData = async () => {
     console.log("carga " + page);
-    obtenerArticulosVenta(consulta, page, pageSize)
+    getLine(query, page, pageSize)
       .then((response) => {
-        setArticulos(response.content);
+        setLines(response.content);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -42,25 +36,24 @@ export default function ListadoArticulosVenta() {
       });
   };
 
-  const handConsultaChange = (e) => {
-    setConsulta(e.target.value);
+  const handleQueryChange = (e) => {
+    setQuery(e.target.value);
   };
 
-  const eliminar = async (id) => {
+  const handleDeleteLine = async (id) => {
     try {
-      const eliminacionExitosa = await eliminarArticulosVenta(id);
+      const eliminacionExitosa = await deleteLine(id);
       if (eliminacionExitosa) {
-        getDatos();
+        getData();
       } else {
-        console.error("Error al eliminar el articulo");
+        console.error("Error al eliminar la línea");
       }
     } catch (error) {
-      console.error("Error al eliminar el articulo:", error);
+      console.error("Error al eliminar la línea:", error);
     }
   };
 
   ///////////////////////////////////////Para el orden de las tablas///////////////////////////////////////////////////
-
   const handleSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -70,7 +63,7 @@ export default function ListadoArticulosVenta() {
   };
 
   const sortedData = () => {
-    const sorted = [...articulos];
+    const sorted = [...lines];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -90,25 +83,25 @@ export default function ListadoArticulosVenta() {
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Articulos Venta </h1>
+        <h1> Gestión de Lineas </h1>
         <hr></hr>
       </div>
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-5">
           <input
-            id="consulta"
-            name="consulta"
+            id="query"
+            name="query"
             className="form-control me-2"
             type="search"
             aria-label="Search"
-            value={consulta}
-            onChange={handConsultaChange}
+            value={query}
+            onChange={handleQueryChange}
           ></input>
         </div>
         <div className="col-1">
           <button
-            onClick={() => getDatos()}
+            onClick={() => getData()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -118,7 +111,7 @@ export default function ListadoArticulosVenta() {
       </div>
       <hr></hr>
       <table className="table table-striped table-hover align-middle">
-        <thead className="table-dark">
+        <thead className="table-dark text-center">
           <tr>
             <th scope="col" onClick={() => handleSort("id")}>
               #
@@ -128,9 +121,9 @@ export default function ListadoArticulosVenta() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("denominacion")}>
+            <th scope="col" onClick={() => handleSort("denomination")}>
               Denominación
-              {sortConfig.key === "denominacion" && (
+              {sortConfig.key === "denomination" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
@@ -143,15 +136,15 @@ export default function ListadoArticulosVenta() {
         <tbody>
           {
             //iteramos empleados
-            sortedData().map((articulo, indice) => (
-              <tr key={indice}>
-                <th scope="row">{articulo.id}</th>
-                <td>{articulo.denominacion}</td>
+            sortedData().map((line, index) => (
+              <tr key={index}>
+                <th scope="row">{line.id}</th>
+                <td>{line.denomination}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/articulo/${articulo.id}`}
+                      to={`/linea/${line.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -162,7 +155,7 @@ export default function ListadoArticulosVenta() {
                     </Link>
 
                     <button
-                      onClick={() => eliminar(articulo.id)}
+                      onClick={() => handleDeleteLine(line.id)}
                       className="btn btn-link btn-sm me-3"
                     >
                       {" "}
@@ -182,7 +175,7 @@ export default function ListadoArticulosVenta() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/articulo`} className="btn btn-success btn-sm me-3">
+          <Link to={`/linea`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

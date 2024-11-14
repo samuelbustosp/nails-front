@@ -1,8 +1,8 @@
 import axios from "axios";
 import { API_URL } from "../App.config";
 
-const urlBase = API_URL + "/articulosPageQuery";
-export async function obtenerArticulosVenta(consulta, page, pageSize) {
+export async function getLine(consulta, page, pageSize) {
+  const urlBase = API_URL + "/lineasPageQuery";
   try {
     const { data } = await axios({
       method: "GET",
@@ -10,39 +10,52 @@ export async function obtenerArticulosVenta(consulta, page, pageSize) {
     });
     return data;
   } catch (error) {
-    console.error("Error buscando articulos:", error);
+    console.error("Error buscando lineas:", error);
     throw error;
   }
 }
 
-export async function obtenerArticuloVenta(id) {
+export async function obtenerLineas2() {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/articulos/${id}`,
+      url: `${API_URL}/lineas`,
     });
     return data;
   } catch (error) {
-    console.error("Error en buscar una articulo:", error);
+    console.error("Error buscando lineas:", error);
     throw error;
   }
 }
 
-export async function newArticuloVenta(model) {
+export async function getLineById(id) {
   try {
-    if (model.id > 0) {
-      window.alert("entra por el put");
+    // `${urlBase}/${id}`
+    const { data } = await axios({
+      method: "GET",
+      url: `${API_URL}/linea/${id}`,
+    });
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.error("Error en buscar una linea:", error);
+    throw error;
+  }
+}
+
+export async function newLinea(line) {
+  try {
+    if (line.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/articulos/${model.id}`,
-        data: model,
+        url: `${API_URL}/linea/${line.id}`,
+        data: line,
       });
     } else {
-      window.alert("entra por el post");
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/articulos`,
-        data: model,
+        url: `${API_URL}/linea`,
+        data: line,
       });
     }
 
@@ -62,8 +75,8 @@ export async function newArticuloVenta(model) {
   }
 }
 
-export async function eliminarArticulosVenta(id) {
-  const urlBase = API_URL + "/articulosEliminar";
+export async function deleteLine(id) {
+  const urlBase = API_URL + "/lineaEliminar";
   const { data } = await axios({
     method: "PUT",
     url: `${urlBase}/${id}`,

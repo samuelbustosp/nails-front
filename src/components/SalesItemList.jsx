@@ -1,35 +1,40 @@
-import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
-import { LineaContext } from "./LineaContext";
-import { obtenerLineas, eliminarLineas } from "../Services/LineaService";
+import { Link } from "react-router-dom";
 
-export default function ListadoLinea() {
-  const { lineas, setLineas } = useContext(LineaContext);
+import {
+  getSalesItem,
+  deleteSalesItem,
+} from "../Services/SalesItemService";
+import { ArticuloVentaContext } from "./ArticuloVentaContext";
 
-  const [consulta, setConsulta] = useState("");
+export default function SalesItemList() {
+  const { items, setItems } = useContext(ArticuloVentaContext);
+
+  const [query, setQuery] = useState("");
+
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
+
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   }); //se utiliza para el orden
 
   useEffect(() => {
-    getDatos();
-  }, [page, pageSize, consulta]);
+    getItems();
+  }, [page, pageSize, query]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  const getDatos = async () => {
+  const getItems = async () => {
     console.log("carga " + page);
-    obtenerLineas(consulta, page, pageSize)
+    getSalesItem(query, page, pageSize)
       .then((response) => {
-        setLineas(response.content);
+        setItems(response.content);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -37,24 +42,25 @@ export default function ListadoLinea() {
       });
   };
 
-  const handConsultaChange = (e) => {
-    setConsulta(e.target.value);
+  const handleQueryChange = (e) => {
+    setQuery(e.target.value);
   };
 
-  const eliminar = async (id) => {
+  const handleDeleteItem = async (id) => {
     try {
-      const eliminacionExitosa = await eliminarLineas(id);
+      const eliminacionExitosa = await deleteSalesItem(id);
       if (eliminacionExitosa) {
-        getDatos();
+        getItems();
       } else {
-        console.error("Error al eliminar la línea");
+        console.error("Error al eliminar el articulo");
       }
     } catch (error) {
-      console.error("Error al eliminar la línea:", error);
+      console.error("Error al eliminar el articulo:", error);
     }
   };
 
   ///////////////////////////////////////Para el orden de las tablas///////////////////////////////////////////////////
+
   const handleSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -64,7 +70,7 @@ export default function ListadoLinea() {
   };
 
   const sortedData = () => {
-    const sorted = [...lineas];
+    const sorted = [...items];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -84,7 +90,7 @@ export default function ListadoLinea() {
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Lineas </h1>
+        <h1> Gestión de Articulos Venta </h1>
         <hr></hr>
       </div>
 
@@ -96,13 +102,13 @@ export default function ListadoLinea() {
             className="form-control me-2"
             type="search"
             aria-label="Search"
-            value={consulta}
-            onChange={handConsultaChange}
+            value={query}
+            onChange={handleQueryChange}
           ></input>
         </div>
         <div className="col-1">
           <button
-            onClick={() => getDatos()}
+            onClick={() => getItems()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -112,7 +118,7 @@ export default function ListadoLinea() {
       </div>
       <hr></hr>
       <table className="table table-striped table-hover align-middle">
-        <thead className="table-dark text-center">
+        <thead className="table-dark">
           <tr>
             <th scope="col" onClick={() => handleSort("id")}>
               #
@@ -122,9 +128,9 @@ export default function ListadoLinea() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("denominacion")}>
+            <th scope="col" onClick={() => handleSort("denomination")}>
               Denominación
-              {sortConfig.key === "denominacion" && (
+              {sortConfig.key === "denomination" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
@@ -137,15 +143,15 @@ export default function ListadoLinea() {
         <tbody>
           {
             //iteramos empleados
-            sortedData().map((linea, indice) => (
-              <tr key={indice}>
-                <th scope="row">{linea.id}</th>
-                <td>{linea.denominacion}</td>
+            sortedData().map((item, index) => (
+              <tr key={index}>
+                <th scope="row">{item.id}</th>
+                <td>{item.denomination}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/linea/${linea.id}`}
+                      to={`/articulo/${item.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -156,7 +162,7 @@ export default function ListadoLinea() {
                     </Link>
 
                     <button
-                      onClick={() => eliminar(linea.id)}
+                      onClick={() => handleDeleteItem(item.id)}
                       className="btn btn-link btn-sm me-3"
                     >
                       {" "}
@@ -176,7 +182,7 @@ export default function ListadoLinea() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/linea`} className="btn btn-success btn-sm me-3">
+          <Link to={`/articulo`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

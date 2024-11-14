@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { newLinea, obtenerLinea } from "../Services/LineaService";
+import { 
+  newLine, 
+  getLineById
+  } from "../Services/LineService";
 
-export default function Linea({ title }) {
-  let navegacion = useNavigate();
+export default function Line({ title }) {
+  let navegation = useNavigate();
 
   const { id } = useParams();
 
-  const [linea, setLinea] = useState({
-    denominacion: "",
+  const [line, setLine] = useState({
+    denomination: "",
   });
 
-  const { denominacion } = linea;
+  const { denomination } = line;
 
   useEffect(() => {
     cargarModel();
@@ -20,22 +23,22 @@ export default function Linea({ title }) {
   const cargarModel = async () => {
     if (id > 0) {
       console.log(id);
-      const resultado = await obtenerLinea(id);
+      const resultado = await getLineById(id);
       console.log(resultado);
-      setLinea(resultado);
+      setLine(resultado);
     }
   };
 
   const onInputChange = ({ target: { name, value } }) => {
     //spread operator ... (expandir los atributos)
-    setLinea({ ...linea, [name]: value });
+    setLine({ ...line, [name]: value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    newLinea(linea);
+    newLine(line);
     // Redirigimos a la pagina de inicio
-    navegacion("/lineaList");
+    navegation("/lineaList");
   };
 
   return (
@@ -47,7 +50,7 @@ export default function Linea({ title }) {
 
       <form onSubmit={(e) => onSubmit(e)}>
         <div className="mb-3">
-          <label htmlFor="denominacion" className="form-label">
+          <label htmlFor="denomination" className="form-label">
             {" "}
             Denominacion
           </label>
@@ -57,7 +60,7 @@ export default function Linea({ title }) {
             id="denominacion"
             name="denominacion"
             required={true}
-            value={denominacion}
+            value={denomination}
             onChange={(e) => onInputChange(e)}
           />
         </div>
