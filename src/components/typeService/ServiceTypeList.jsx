@@ -1,40 +1,37 @@
+import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
 import { Link } from "react-router-dom";
-
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
+import { ServiceTypeContext } from "../../contexts/TypeServiceContext";
 import {
-  getSalesItem,
-  deleteSalesItem,
-} from "../Services/SalesItemService";
-import { ArticuloVentaContext } from "./ArticuloVentaContext";
+  deleteServiceType,
+  getServicesTypes,
+} from "../../Services/ServiceTypeService";
 
-export default function SalesItemList() {
-  const { items, setItems } = useContext(ArticuloVentaContext);
+export default function ServiceTypeList() {
+  const { servicesTypes, setServicesTypes } = useContext(ServiceTypeContext);
 
   const [query, setQuery] = useState("");
-
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
-
   const [sortConfig, setSortConfig] = useState({
     key: null,
     direction: "ascending",
   }); //se utiliza para el orden
 
   useEffect(() => {
-    getItems();
+    getData();
   }, [page, pageSize, query]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  const getItems = async () => {
-    console.log("carga " + page);
-    getSalesItem(query, page, pageSize)
+  const getData = async () => {
+    getServicesTypes(query, page, pageSize)
       .then((response) => {
-        setItems(response.content);
+        setServicesTypes(response.content);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -46,21 +43,20 @@ export default function SalesItemList() {
     setQuery(e.target.value);
   };
 
-  const handleDeleteItem = async (id) => {
+  const eliminar = async (id) => {
     try {
-      const eliminacionExitosa = await deleteSalesItem(id);
-      if (eliminacionExitosa) {
-        getItems();
+      const response = await deleteServiceType(id);
+      if (response) {
+        getData();
       } else {
-        console.error("Error al eliminar el articulo");
+        console.error("Error al eliminar el tipo servicio");
       }
     } catch (error) {
-      console.error("Error al eliminar el articulo:", error);
+      console.error("Error al eliminar el tipo servicioss:", error);
     }
   };
 
   ///////////////////////////////////////Para el orden de las tablas///////////////////////////////////////////////////
-
   const handleSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -70,7 +66,7 @@ export default function SalesItemList() {
   };
 
   const sortedData = () => {
-    const sorted = [...items];
+    const sorted = [...servicesTypes];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -90,7 +86,7 @@ export default function SalesItemList() {
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Articulos Venta </h1>
+        <h1> Gestión de Tipo Servicio </h1>
         <hr></hr>
       </div>
 
@@ -108,7 +104,7 @@ export default function SalesItemList() {
         </div>
         <div className="col-1">
           <button
-            onClick={() => getItems()}
+            onClick={() => getData()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -118,7 +114,7 @@ export default function SalesItemList() {
       </div>
       <hr></hr>
       <table className="table table-striped table-hover align-middle">
-        <thead className="table-dark">
+        <thead className="table-dark text-center">
           <tr>
             <th scope="col" onClick={() => handleSort("id")}>
               #
@@ -128,9 +124,9 @@ export default function SalesItemList() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("denomination")}>
+            <th scope="col" onClick={() => handleSort("denominacion")}>
               Denominación
-              {sortConfig.key === "denomination" && (
+              {sortConfig.key === "denominacion" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
@@ -143,15 +139,15 @@ export default function SalesItemList() {
         <tbody>
           {
             //iteramos empleados
-            sortedData().map((item, index) => (
+            sortedData().map((serviceType, index) => (
               <tr key={index}>
-                <th scope="row">{item.id}</th>
-                <td>{item.denomination}</td>
+                <th scope="row">{serviceType.id}</th>
+                <td>{serviceType.denomination}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/articulo/${item.id}`}
+                      to={`/tipoServicio/${serviceType.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -162,7 +158,7 @@ export default function SalesItemList() {
                     </Link>
 
                     <button
-                      onClick={() => handleDeleteItem(item.id)}
+                      onClick={() => eliminar(serviceType.id)}
                       className="btn btn-link btn-sm me-3"
                     >
                       {" "}
@@ -182,7 +178,7 @@ export default function SalesItemList() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/articulo`} className="btn btn-success btn-sm me-3">
+          <Link to={`/tipoServicio`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

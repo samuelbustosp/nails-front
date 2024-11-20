@@ -1,12 +1,12 @@
 import axios from "axios";
 import { API_URL } from "../App.config";
 
-export async function obtenerClientes(consulta, page, pageSize) {
+export async function getCustomers(query, page, pageSize) {
   const urlBase = API_URL + "/clientesPageQuery";
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${urlBase}?consulta=${consulta}&page=${page}&size=${pageSize}`,
+      url: `${urlBase}?consulta=${query}&page=${page}&size=${pageSize}`,
     });
     return data;
   } catch (error) {
@@ -15,7 +15,7 @@ export async function obtenerClientes(consulta, page, pageSize) {
   }
 }
 
-export async function obtenerClientesForCombo() {
+export async function getCustomersForCombo() {
   const urlBase = API_URL + "/clientes";
   try {
     const { data } = await axios({
@@ -29,7 +29,7 @@ export async function obtenerClientesForCombo() {
   }
 }
 
-export async function obtenerCliente(id) {
+export async function getCustomerById(id) {
   try {
     const { data } = await axios({
       method: "GET",
@@ -43,19 +43,19 @@ export async function obtenerCliente(id) {
   }
 }
 
-export async function newCliente(cliente) {
+export async function newCustomer(customer) {
   try {
-    if (cliente.id > 0) {
+    if (customer.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/cliente/${cliente.id}`,
-        data: cliente,
+        url: `${API_URL}/cliente/${customer.id}`,
+        data: customer,
       });
     } else {
       const { data } = await axios({
         method: "POST",
         url: `${API_URL}/cliente`,
-        data: cliente,
+        data: customer,
       });
     }
 
@@ -75,7 +75,7 @@ export async function newCliente(cliente) {
   }
 }
 
-export async function eliminarCliente(id) {
+export async function deleteCustomer(id) {
   const urlBase = API_URL + "/clienteEliminar";
   const { data } = await axios({
     method: "PUT",

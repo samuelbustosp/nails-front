@@ -1,12 +1,14 @@
+import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
-import { LineaContext } from "./LineaContext";
-import { getLine, deleteLine } from "../Services/LineService";
+import { Link, useParams } from "react-router-dom";
+import { ITEMS_PER_PAGE, API_URL } from "../App.config";
+import { ClienteContext } from "./ClienteContext";
+import { obtenerClientes, eliminarCliente } from "../Services/ClienteService";
+import { CustomerContext } from "../../contexts/CustomerContext";
+import { deleteCustomer, getCustomers } from "../../Services/CustomerService";
 
-export default function LineList() {
-  const { lines, setLines } = useContext(LineaContext);
-
+export default function ListadoCliente() {
+  const { customers, setCustomers } = useContext(CustomerContext);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
@@ -26,9 +28,9 @@ export default function LineList() {
 
   const getData = async () => {
     console.log("carga " + page);
-    getLine(query, page, pageSize)
+    getCustomers(query, page, pageSize)
       .then((response) => {
-        setLines(response.content);
+        setCustomers(response.content);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -40,20 +42,21 @@ export default function LineList() {
     setQuery(e.target.value);
   };
 
-  const handleDeleteLine = async (id) => {
+  const handleDeleteCustomer = async (id) => {
     try {
-      const eliminacionExitosa = await deleteLine(id);
-      if (eliminacionExitosa) {
+      const response = await deleteCustomer(id);
+      if (response) {
         getData();
       } else {
-        console.error("Error al eliminar la línea");
+        console.error("Error al eliminar el cliente");
       }
     } catch (error) {
-      console.error("Error al eliminar la línea:", error);
+      console.error("Error al eliminar el cliente:", error);
     }
   };
 
   ///////////////////////////////////////Para el orden de las tablas///////////////////////////////////////////////////
+
   const handleSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -63,7 +66,7 @@ export default function LineList() {
   };
 
   const sortedData = () => {
-    const sorted = [...lines];
+    const sorted = [...customers];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -77,13 +80,12 @@ export default function LineList() {
     }
     return sorted;
   };
-
   ///////////////////////////////////////Hasta aca para el orden de las tablas///////////////////////////////////////////////////
 
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Lineas </h1>
+        <h1> Gestión de Clientes </h1>
         <hr></hr>
       </div>
 
@@ -101,7 +103,7 @@ export default function LineList() {
         </div>
         <div className="col-1">
           <button
-            onClick={() => getData()}
+            onClick={() => getDatos()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -111,7 +113,7 @@ export default function LineList() {
       </div>
       <hr></hr>
       <table className="table table-striped table-hover align-middle">
-        <thead className="table-dark text-center">
+        <thead className="table-dark">
           <tr>
             <th scope="col" onClick={() => handleSort("id")}>
               #
@@ -121,48 +123,57 @@ export default function LineList() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("denomination")}>
-              Denominación
-              {sortConfig.key === "denomination" && (
+            <th scope="col" onClick={() => handleSort("razonSocial")}>
+              Apellido y Nombre
+              {sortConfig.key === "razonSocial" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
               )}
             </th>
-
+            <th scope="col" onClick={() => handleSort("celular")}>
+              Cel
+              {sortConfig.key === "celular" && (
+                <span>
+                  {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
+                </span>
+              )}
+            </th>
+            <th scope="col" onClick={() => handleSort("mail")}>
+              Mail
+              {sortConfig.key === "mail" && (
+                <span>
+                  {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
+                </span>
+              )}
+            </th>
             <th scope="col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {
             //iteramos empleados
-            sortedData().map((line, index) => (
+            sortedData().map((customer, index) => (
               <tr key={index}>
-                <th scope="row">{line.id}</th>
-                <td>{line.denomination}</td>
+                <th scope="row">{customer.id}</th>
+                <td>{customer.razonSocial}</td>
+                <td>{customer.celular}</td>
+                <td>{customer.mail}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/linea/${line.id}`}
+                      to={`/cliente/${cliente.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
-                      <img
-                        src={IMAGEN_EDIT}
-                        style={{ width: "20px", height: "20px" }}
-                      />
                       Editar
                     </Link>
 
                     <button
-                      onClick={() => handleDeleteLine(line.id)}
+                      onClick={() => handleDeleteCustomer(customer.id)}
                       className="btn btn-link btn-sm me-3"
                     >
                       {" "}
-                      <img
-                        src={IMAGEN_DELETE}
-                        style={{ width: "20px", height: "20px" }}
-                      />
                       Eliminar
                     </button>
                   </div>
@@ -175,7 +186,7 @@ export default function LineList() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/linea`} className="btn btn-success btn-sm me-3">
+          <Link to={`/cliente`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

@@ -1,21 +1,20 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  newTipoServicio,
-  obtenerTipoServicio,
-} from "../Services/TipoServicioService";
+import { 
+  newLine, 
+  getLineById
+  } from "../../Services/LineService";
 
-export default function TipoServicio({ title }) {
-  let navegacion = useNavigate();
+export default function Line({ title }) {
+  let navegation = useNavigate();
 
   const { id } = useParams();
 
-  const [tipoServicio, setTipoServicio] = useState({
-    denominacion: "",
+  const [line, setLine] = useState({
+    denomination: "",
   });
 
-  const { denominacion } = tipoServicio;
+  const { denomination } = line;
 
   useEffect(() => {
     cargarModel();
@@ -24,33 +23,34 @@ export default function TipoServicio({ title }) {
   const cargarModel = async () => {
     if (id > 0) {
       console.log(id);
-      const resultado = await obtenerTipoServicio(id);
-      setTipoServicio(resultado);
+      const resultado = await getLineById(id);
+      console.log(resultado);
+      setLine(resultado);
     }
   };
 
   const onInputChange = ({ target: { name, value } }) => {
     //spread operator ... (expandir los atributos)
-    setTipoServicio({ ...tipoServicio, [name]: value });
+    setLine({ ...line, [name]: value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    newTipoServicio(tipoServicio);
+    newLine(line);
     // Redirigimos a la pagina de inicio
-    navegacion("/tipoServicioList");
+    navegation("/lineaList");
   };
 
   return (
     <div className="container">
       <div>
-        <h1> Gestión de tipo servicio / {title} </h1>
+        <h1> Gestión de Linea / {title} </h1>
         <hr></hr>
       </div>
 
       <form onSubmit={(e) => onSubmit(e)}>
         <div className="mb-3">
-          <label htmlFor="denominacion" className="form-label">
+          <label htmlFor="denomination" className="form-label">
             {" "}
             Denominacion
           </label>
@@ -60,7 +60,7 @@ export default function TipoServicio({ title }) {
             id="denominacion"
             name="denominacion"
             required={true}
-            value={denominacion}
+            value={denomination}
             onChange={(e) => onInputChange(e)}
           />
         </div>
@@ -72,7 +72,7 @@ export default function TipoServicio({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/tipoServicioList" className="btn btn-info btn-sm me-3">
+            <a href="/lineaList" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>

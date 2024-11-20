@@ -1,7 +1,7 @@
 import axios from "axios";
 import { API_URL } from "../App.config";
 
-export async function obtenerTiposServicios(consulta, page, pageSize) {
+export async function getServicesTypes(consulta, page, pageSize) {
   try {
     const urlBase = API_URL + "/tiposServiciosPageQuery";
     const { data } = await axios({
@@ -15,7 +15,7 @@ export async function obtenerTiposServicios(consulta, page, pageSize) {
   }
 }
 
-export async function obtenerTiposServiciosForCombo() {
+export async function getServicesTypesForCombo() {
   try {
     const urlBase = API_URL + "/tiposServicios";
     const { data } = await axios({
@@ -29,7 +29,7 @@ export async function obtenerTiposServiciosForCombo() {
   }
 }
 
-export async function obtenerTipoServicio(id) {
+export async function getServiceTypeById(id) {
   try {
     const { data } = await axios({
       method: "GET",
@@ -42,19 +42,19 @@ export async function obtenerTipoServicio(id) {
   }
 }
 
-export async function newTipoServicio(tipoServicio) {
+export async function newServiceType(typeService) {
   try {
-    if (tipoServicio.id > 0) {
+    if (typeService.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/tipoServicios/${tipoServicio.id}`,
-        data: tipoServicio,
+        url: `${API_URL}/tipoServicios/${typeService.id}`,
+        data: typeService,
       });
     } else {
       const { data } = await axios({
         method: "POST",
         url: `${API_URL}/tiposServicios`,
-        data: tipoServicio,
+        data: typeService,
       });
     }
 
@@ -74,7 +74,7 @@ export async function newTipoServicio(tipoServicio) {
   }
 }
 
-export async function eliminarTipoServicio(id) {
+export async function deleteServiceType(id) {
   const urlBase = API_URL + "/tipoServicioEliminar";
   const { data } = await axios({
     method: "PUT",

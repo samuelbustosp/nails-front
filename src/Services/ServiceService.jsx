@@ -4,11 +4,11 @@ import { API_URL } from "../App.config";
 const urlBase = API_URL + "/serviciosPageQuery";
 
 // Obtener una lista paginada de servicios
-export async function obtenerServicios(consulta, page, pageSize) {
+export async function getServices(query, page, pageSize) {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${urlBase}?consulta=${consulta}&page=${page}&size=${pageSize}`,
+      url: `${urlBase}?query=${query}&page=${page}&size=${pageSize}`,
     });
     return data;
   } catch (error) {
@@ -18,7 +18,7 @@ export async function obtenerServicios(consulta, page, pageSize) {
 }
 
 // Obtener un servicio por su ID
-export async function obtenerServicio(id) {
+export async function getServiceById(id) {
   try {
     const { data } = await axios({
       method: "GET",
@@ -32,20 +32,20 @@ export async function obtenerServicio(id) {
 }
 
 // Crear o actualizar un servicio
-export async function newServicio(servicio) {
+export async function newService(service) {
   try {
-    if (servicio.id > 0) {
+    if (service.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/servicios/${servicio.id}`,
-        data: servicio,
+        url: `${API_URL}/servicios/${service.id}`,
+        data: service,
       });
       return data;
     } else {
       const { data } = await axios({
         method: "POST",
         url: `${API_URL}/servicios`,
-        data: servicio,
+        data: service,
       });
       return data;
     }
@@ -56,7 +56,7 @@ export async function newServicio(servicio) {
 }
 
 // Eliminar un servicio
-export async function eliminarServicio(id) {
+export async function deleteService(id) {
   try {
     const { data } = await axios({
       method: "PUT",

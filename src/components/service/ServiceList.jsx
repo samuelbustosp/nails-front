@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
-import { ServicioContext } from "./ServicioContext";
+import { ServiceContext } from "./ServiceContext";
 import {
-  eliminarServicio,
-  obtenerServicios,
-} from "../Services/ServicioService";
+  deleteService,
+  getServices
+} from "../../Services/ServiceService";
 
-export default function ListadoServicio() {
-  const { servicios, setServicios } = useContext(ServicioContext);
-  const [consulta, setConsulta] = useState("");
+export default function ServiceList() {
+  const { services, setServices } = useContext(ServiceContext);
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
@@ -21,17 +21,16 @@ export default function ListadoServicio() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    getDatos();
+    getData();
+    console.log("Servicios actualizados:", services); // Agrega este log para verificar los datos
+  }, [page, pageSize, query]);
 
-    console.log("Servicios actualizados:", servicios); // Agrega este log para verificar los datos
-  }, [page, pageSize, consulta]);
-
-  const getDatos = async () => {
+  const getData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await obtenerServicios(consulta, page, pageSize);
-      setServicios(response.content);
+      const response = await getServices(query, page, pageSize);
+      setServices(response.content);
       setTotalPages(response.totalPages);
     } catch (err) {
       setError("Error fetching items");
@@ -46,16 +45,16 @@ export default function ListadoServicio() {
     }
   };
 
-  const handleConsultaChange = (e) => {
-    setConsulta(e.target.value);
+  const handleQueryChange = (e) => {
+    setQuery(e.target.value);
   };
 
-  const eliminar = async (id) => {
+  const handleDeleteService = async (id) => {
     if (window.confirm("¿Estás seguro de que deseas eliminar este servicio?")) {
       try {
-        const eliminacionExitosa = await eliminarServicio(id);
-        if (eliminacionExitosa) {
-          getDatos();
+        const response = await deleteService(id);
+        if (response) {
+          getData();
         } else {
           console.error("Error al eliminar servicio");
         }
@@ -74,7 +73,7 @@ export default function ListadoServicio() {
   };
 
   const sortedData = () => {
-    const sorted = [...servicios];
+    const sorted = [...services];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -99,18 +98,18 @@ export default function ListadoServicio() {
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-5">
           <input
-            id="consulta"
-            name="consulta"
+            id="query"
+            name="query"
             className="form-control"
             type="search"
             placeholder="Buscar servicio"
-            value={consulta}
-            onChange={handleConsultaChange}
+            value={query}
+            onChange={handleQueryChange}
           />
         </div>
         <div className="col-1">
           <button
-            onClick={() => getDatos()}
+            onClick={() => getData()}
             className="btn btn-outline-success"
           >
             Buscar
@@ -158,16 +157,16 @@ export default function ListadoServicio() {
               </tr>
             </thead>
             <tbody>
-              {sortedData().map((servicio, indice) => (
+              {sortedData().map((service, indice) => (
                 <tr key={indice}>
-                  <th scope="row">{servicio.id}</th>
+                  <th scope="row">{service.id}</th>
 
-                  <td>{servicio.clienteRazonSocial}</td>
-                  <td>{servicio.fechaDocumento}</td>
+                  <td>{service.clienteRazonSocial}</td>
+                  <td>{service.fechaDocumento}</td>
                   <td className="text-center">
                     <div>
                       <Link
-                        to={`/servicio/${servicio.id}`}
+                        to={`/servicio/${service.id}`}
                         className="btn btn-link btn-sm me-3"
                       >
                         <img
@@ -177,7 +176,7 @@ export default function ListadoServicio() {
                         Editar
                       </Link>
                       <button
-                        onClick={() => eliminar(servicio.id)}
+                        onClick={() => handleDeleteService(service.id)}
                         className="btn btn-link btn-sm me-3"
                       >
                         <img

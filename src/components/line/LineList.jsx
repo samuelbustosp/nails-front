@@ -1,13 +1,13 @@
-import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ITEMS_PER_PAGE, API_URL } from "../App.config";
-import { ClienteContext } from "./ClienteContext";
-import { obtenerClientes, eliminarCliente } from "../Services/ClienteService";
+import { Link } from "react-router-dom";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
+import { LineaContext } from "./LineaContext";
+import { getLine, deleteLine } from "../../Services/LineService";
 
-export default function ListadoCliente() {
-  const { clientes, setClientes } = useContext(ClienteContext);
-  const [consulta, setConsulta] = useState("");
+export default function LineList() {
+  const { lines, setLines } = useContext(LineaContext);
+
+  const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
   const [totalPages, setTotalPages] = useState(0);
@@ -17,18 +17,18 @@ export default function ListadoCliente() {
   }); //se utiliza para el orden
 
   useEffect(() => {
-    getDatos();
-  }, [page, pageSize, consulta]);
+    getData();
+  }, [page, pageSize, query]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
-  const getDatos = async () => {
+  const getData = async () => {
     console.log("carga " + page);
-    obtenerClientes(consulta, page, pageSize)
+    getLine(query, page, pageSize)
       .then((response) => {
-        setClientes(response.content);
+        setLines(response.content);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -36,25 +36,24 @@ export default function ListadoCliente() {
       });
   };
 
-  const handConsultaChange = (e) => {
-    setConsulta(e.target.value);
+  const handleQueryChange = (e) => {
+    setQuery(e.target.value);
   };
 
-  const eliminar = async (id) => {
+  const handleDeleteLine = async (id) => {
     try {
-      const eliminacionExitosa = await eliminarCliente(id);
+      const eliminacionExitosa = await deleteLine(id);
       if (eliminacionExitosa) {
-        getDatos();
+        getData();
       } else {
-        console.error("Error al eliminar el cliente");
+        console.error("Error al eliminar la línea");
       }
     } catch (error) {
-      console.error("Error al eliminar el cliente:", error);
+      console.error("Error al eliminar la línea:", error);
     }
   };
 
   ///////////////////////////////////////Para el orden de las tablas///////////////////////////////////////////////////
-
   const handleSort = (key) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -64,7 +63,7 @@ export default function ListadoCliente() {
   };
 
   const sortedData = () => {
-    const sorted = [...clientes];
+    const sorted = [...lines];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -78,30 +77,31 @@ export default function ListadoCliente() {
     }
     return sorted;
   };
+
   ///////////////////////////////////////Hasta aca para el orden de las tablas///////////////////////////////////////////////////
 
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Clientes </h1>
+        <h1> Gestión de Lineas </h1>
         <hr></hr>
       </div>
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-5">
           <input
-            id="consulta"
-            name="consulta"
+            id="query"
+            name="query"
             className="form-control me-2"
             type="search"
             aria-label="Search"
-            value={consulta}
-            onChange={handConsultaChange}
+            value={query}
+            onChange={handleQueryChange}
           ></input>
         </div>
         <div className="col-1">
           <button
-            onClick={() => getDatos()}
+            onClick={() => getData()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -111,7 +111,7 @@ export default function ListadoCliente() {
       </div>
       <hr></hr>
       <table className="table table-striped table-hover align-middle">
-        <thead className="table-dark">
+        <thead className="table-dark text-center">
           <tr>
             <th scope="col" onClick={() => handleSort("id")}>
               #
@@ -121,57 +121,48 @@ export default function ListadoCliente() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("razonSocial")}>
-              Apellido y Nombre
-              {sortConfig.key === "razonSocial" && (
+            <th scope="col" onClick={() => handleSort("denomination")}>
+              Denominación
+              {sortConfig.key === "denomination" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("celular")}>
-              Cel
-              {sortConfig.key === "celular" && (
-                <span>
-                  {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
-                </span>
-              )}
-            </th>
-            <th scope="col" onClick={() => handleSort("mail")}>
-              Mail
-              {sortConfig.key === "mail" && (
-                <span>
-                  {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
-                </span>
-              )}
-            </th>
+
             <th scope="col">Acciones</th>
           </tr>
         </thead>
         <tbody>
           {
             //iteramos empleados
-            sortedData().map((cliente, indice) => (
-              <tr key={indice}>
-                <th scope="row">{cliente.id}</th>
-                <td>{cliente.razonSocial}</td>
-                <td>{cliente.celular}</td>
-                <td>{cliente.mail}</td>
+            sortedData().map((line, index) => (
+              <tr key={index}>
+                <th scope="row">{line.id}</th>
+                <td>{line.denomination}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/cliente/${cliente.id}`}
+                      to={`/linea/${line.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
+                      <img
+                        src={IMAGEN_EDIT}
+                        style={{ width: "20px", height: "20px" }}
+                      />
                       Editar
                     </Link>
 
                     <button
-                      onClick={() => eliminar(cliente.id)}
+                      onClick={() => handleDeleteLine(line.id)}
                       className="btn btn-link btn-sm me-3"
                     >
                       {" "}
+                      <img
+                        src={IMAGEN_DELETE}
+                        style={{ width: "20px", height: "20px" }}
+                      />
                       Eliminar
                     </button>
                   </div>
@@ -184,7 +175,7 @@ export default function ListadoCliente() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/cliente`} className="btn btn-success btn-sm me-3">
+          <Link to={`/linea`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

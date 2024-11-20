@@ -1,50 +1,50 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { 
-  newLine, 
-  getLineById
-  } from "../Services/LineService";
+import {
+  newServiceType,
+  getServiceType,
+} from "../../Services/ServiceTypeService";
 
-export default function Line({ title }) {
+export default function ServiceType({ title }) {
   let navegation = useNavigate();
 
   const { id } = useParams();
 
-  const [line, setLine] = useState({
+  const [serviceType, setServiceType] = useState({
     denomination: "",
   });
 
-  const { denomination } = line;
+  const { denomination } = serviceType;
 
   useEffect(() => {
-    cargarModel();
+    loadModel();
   }, []);
 
-  const cargarModel = async () => {
+  const loadModel = async () => {
     if (id > 0) {
       console.log(id);
-      const resultado = await getLineById(id);
-      console.log(resultado);
-      setLine(resultado);
+      const response = await getServiceType(id);
+      setServiceType(response);
     }
   };
 
   const onInputChange = ({ target: { name, value } }) => {
     //spread operator ... (expandir los atributos)
-    setLine({ ...line, [name]: value });
+    setServiceType({ ...serviceType, [name]: value });
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    newLine(line);
+    newServiceType(serviceType);
     // Redirigimos a la pagina de inicio
-    navegation("/lineaList");
+    navegation("/tipoServicioList");
   };
 
   return (
     <div className="container">
       <div>
-        <h1> Gestión de Linea / {title} </h1>
+        <h1> Gestión de tipo servicio / {title} </h1>
         <hr></hr>
       </div>
 
@@ -57,8 +57,8 @@ export default function Line({ title }) {
           <input
             type="text"
             className="form-control"
-            id="denominacion"
-            name="denominacion"
+            id="denomination"
+            name="denomination"
             required={true}
             value={denomination}
             onChange={(e) => onInputChange(e)}
@@ -72,7 +72,7 @@ export default function Line({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/lineaList" className="btn btn-info btn-sm me-3">
+            <a href="/tipoServicioList" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>
