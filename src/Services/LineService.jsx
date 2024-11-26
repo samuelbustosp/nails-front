@@ -1,8 +1,8 @@
 import axios from "axios";
-import { API_URL } from "../App.config";
+import { API_URL } from "../configuration/App.config";
 
-export async function getLine(consulta, page, pageSize) {
-  const urlBase = API_URL + "/lineasPageQuery";
+export async function getLines(consulta, page, pageSize) {
+  const urlBase = API_URL + "/linePageQuery";
   try {
     const { data } = await axios({
       method: "GET",
@@ -15,11 +15,11 @@ export async function getLine(consulta, page, pageSize) {
   }
 }
 
-export async function obtenerLineas2() {
+export async function getLine() {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/lineas`,
+      url: `${API_URL}/line`,
     });
     return data;
   } catch (error) {
@@ -33,7 +33,7 @@ export async function getLineById(id) {
     // `${urlBase}/${id}`
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/linea/${id}`,
+      url: `${API_URL}/line/${id}`,
     });
     console.log(data);
     return data;
@@ -43,18 +43,18 @@ export async function getLineById(id) {
   }
 }
 
-export async function newLinea(line) {
+export async function newLine(line) {
   try {
     if (line.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/linea/${line.id}`,
+        url: `${API_URL}/line/${line.id}`,
         data: line,
       });
     } else {
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/linea`,
+        url: `${API_URL}/line`,
         data: line,
       });
     }
@@ -76,9 +76,9 @@ export async function newLinea(line) {
 }
 
 export async function deleteLine(id) {
-  const urlBase = API_URL + "/lineaEliminar";
+  const urlBase = API_URL + "/line";
   const { data } = await axios({
-    method: "PUT",
+    method: "DELETE",
     url: `${urlBase}/${id}`,
   });
   return true;

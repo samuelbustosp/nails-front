@@ -1,8 +1,8 @@
 import axios from "axios";
-import { API_URL } from "../App.config";
+import { API_URL } from "../configuration/App.config";
 
 export async function getCustomers(query, page, pageSize) {
-  const urlBase = API_URL + "/clientesPageQuery";
+  const urlBase = API_URL + "/customerPageQuery";
   try {
     const { data } = await axios({
       method: "GET",
@@ -15,8 +15,24 @@ export async function getCustomers(query, page, pageSize) {
   }
 }
 
+export async function getCustomer() {
+  const urlBase = API_URL + "/customer";
+  try {
+    const { data } = await axios({
+      method: "GET",
+      url: `${urlBase}`,
+    });
+    console.log("clientes",data);
+    return data;
+  } catch (error) {
+    console.error("Error buscando clientes:", error);
+    throw error;
+  }
+}
+
+
 export async function getCustomersForCombo() {
-  const urlBase = API_URL + "/clientes";
+  const urlBase = API_URL + "/customer";
   try {
     const { data } = await axios({
       method: "GET",
@@ -33,7 +49,7 @@ export async function getCustomerById(id) {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/cliente/${id}`,
+      url: `${API_URL}/customer/${id}`,
     });
     console.log(data);
     return data;
@@ -47,14 +63,14 @@ export async function newCustomer(customer) {
   try {
     if (customer.id > 0) {
       const { data } = await axios({
-        method: "PUT",
-        url: `${API_URL}/cliente/${customer.id}`,
+        method: "POST",
+        url: `${API_URL}/customer/${customer.id}`,
         data: customer,
       });
     } else {
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/cliente`,
+        url: `${API_URL}/customer`,
         data: customer,
       });
     }
@@ -76,9 +92,9 @@ export async function newCustomer(customer) {
 }
 
 export async function deleteCustomer(id) {
-  const urlBase = API_URL + "/clienteEliminar";
+  const urlBase = API_URL + "/customer";
   const { data } = await axios({
-    method: "PUT",
+    method: "DELETE",
     url: `${urlBase}/${id}`,
   });
   return true;

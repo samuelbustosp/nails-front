@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
-import { ServiceContext } from "./ServiceContext";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../../configuration/app.config";
+import { ServiceContext } from "../../contexts/ServiceContext";
 import {
   deleteService,
   getServices
 } from "../../Services/ServiceService";
+
 
 export default function ServiceList() {
   const { services, setServices } = useContext(ServiceContext);
@@ -88,6 +89,8 @@ export default function ServiceList() {
     return sorted;
   };
 
+  
+
   return (
     <div className="container">
       <div>
@@ -153,6 +156,7 @@ export default function ServiceList() {
                     </span>
                   )}
                 </th>
+                <th scope="col">Total</th>
                 <th scope="col">Acciones</th>
               </tr>
             </thead>
@@ -161,12 +165,13 @@ export default function ServiceList() {
                 <tr key={indice}>
                   <th scope="row">{service.id}</th>
 
-                  <td>{service.clienteRazonSocial}</td>
-                  <td>{service.fechaDocumento}</td>
+                  <td>{service.customerBusinessName}</td>
+                  <td>{new Date(service.registrationTimestamp).toLocaleDateString('es-AR')}</td>
+                  <td>{'$'+service.total.toLocaleString('es-AR',{minimumFractionDigits: 2})}</td>
                   <td className="text-center">
                     <div>
                       <Link
-                        to={`/servicio/${service.id}`}
+                        to={`/service/${service.id}`}
                         className="btn btn-link btn-sm me-3"
                       >
                         <img
@@ -212,7 +217,7 @@ export default function ServiceList() {
 
           <div className="row d-md-flex justify-content-md-end mt-3">
             <div className="col-4">
-              <Link to={`/servicio`} className="btn btn-success btn-sm">
+              <Link to={`/service`} className="btn btn-success btn-sm">
                 Nuevo
               </Link>
             </div>

@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
-import { LineaContext } from "./LineaContext";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../../configuration/app.config";
+import { LineContext } from "../../contexts/LineContext";
 import { getLine, deleteLine } from "../../Services/LineService";
 
 export default function LineList() {
-  const { lines, setLines } = useContext(LineaContext);
+  const { lines, setLines } = useContext(LineContext);
 
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -18,7 +18,7 @@ export default function LineList() {
 
   useEffect(() => {
     getData();
-  }, [page, pageSize, query]);
+  }, []);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -26,9 +26,9 @@ export default function LineList() {
 
   const getData = async () => {
     console.log("carga " + page);
-    getLine(query, page, pageSize)
+    getLine()
       .then((response) => {
-        setLines(response.content);
+        setLines(response);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -63,7 +63,7 @@ export default function LineList() {
   };
 
   const sortedData = () => {
-    const sorted = [...lines];
+    const sorted = Array.isArray(lines) ? [...lines] : [];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -144,7 +144,7 @@ export default function LineList() {
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/linea/${line.id}`}
+                      to={`/line/${line.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -175,7 +175,7 @@ export default function LineList() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/linea`} className="btn btn-success btn-sm me-3">
+          <Link to={`/line`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

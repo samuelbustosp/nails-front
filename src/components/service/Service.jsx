@@ -2,34 +2,35 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { newService, getServiceById } from "../../Services/ServiceService";
-import { obtenerClientesForCombo } from "../Services/ClienteService";
-import { obtenerTiposServiciosForCombo } from "../Services/TypeServiceService";
+import { getServicesTypesForCombo } from "../../services/ServiceTypeService";
+import { getCustomersForCombo } from "../../Services/CustomerService";
 
-export default function Servicio({ title }) {
+export default function Service({ title }) {
   let navegation = useNavigate();
   const { id } = useParams();
 
-  const [service, setService] = useState({
-    denomination: "",
-  });
+  const [service, setService] = useState({});
 
   const [customersList, setCustomersList] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [typeService, setTypeService] = useState([]);
+  const [date, setDate] = useState(new Date().getTime());  // Esto ahora incluye la fecha y la hora
+  const [serviceType, setServiceType] = useState([]);
   const [services, setServices] = useState([]);
   const [total, setTotal] = useState(0); // Estado para el total
   const [errors, setErrors] = useState({
     date: "",
     customer: "",
-    services: Array(services.length).fill({ typeService: "", price: "" }),
+    services: Array(services.length).fill({ serviceType: "", price: "" }),
   });
 
   useEffect(() => {
-    loadModel();
+    if (id) {  // Verifica que el id está presente antes de cargar los datos
+      loadModel();
+    }
     loadCustomers();
-    loadTypeServices();
-  }, []);
+    loadServicesType();
+  }, [id]);  // Agrega [id] como dependencia
+  
 
   // Calcular el total cada vez que cambie la lista de servicios
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function Servicio({ title }) {
       0,
     );
     setTotal(newTotal);
-  }, [services]);
+  }, [service, services]);
 
   // const cargarModel2 = async () => {
   //   if (id > 0) {
@@ -51,29 +52,57 @@ export default function Servicio({ title }) {
   // };
 
   const loadModel = async () => {
-    if (id > 0) {
-      const resultado = await getServiceById(id);
-      setService(resultado);
-      setSelectedCustomer(String(resultado.customer.id)); // Convertir a string
-      setDate(new Date(resultado.fechaDocumento).toISOString().split("T")[0]);
-      setServices(resultado.listaItems);
+    if (id) {  // Si el id tiene algún valor
+      try {
+        const response = await getServiceById(id);
+        console.log(response);
+  
+        // Cargar el servicio
+        setService(response);
+  
+        // Cargar cliente
+        setSelectedCustomer(String(response.customerId));
+  
+        // Cargar fecha
+        setDate(new Date(response.registrationTimestamp).toISOString().split("T")[0]);
+  
+        // Verificar si itemList es un arreglo antes de procesarlo
+        if (Array.isArray(response.serviceItems)) { 
+          setServices(
+            response.serviceItems.map((item) => ({
+              serviceTypeId: item.serviceType?.id || "", // Si serviceType no existe, asignamos un string vacío
+              serviceType: item.serviceType?.denomination || "", // Si denomination no existe, asignamos un string vacío
+              price: item.price || 0, // Si price no existe, asignamos 0
+              observations: item.observations || "", // Si observations no existe, asignamos un string vacío
+            }))
+          );
+        } else {
+          console.error('itemList no es un arreglo válido');
+          setServices([]); // Si itemList no es válido, asignamos un arreglo vacío
+        }
+      } catch (error) {
+        console.error("Error cargando el modelo:", error);
+      }
     }
   };
+  
+  
+  
 
   const loadCustomers = async () => {
-    const resultado = await obtenerClientesForCombo();
+    const resultado = await getCustomersForCombo();
     setCustomersList(resultado);
   };
 
-  const loadTypeServices = async () => {
-    const resultado = await obtenerTiposServiciosForCombo();
-    setTypeService(resultado);
+  const loadServicesType = async () => {
+    const response = await getServicesTypesForCombo();
+    setServiceType(response);
   };
 
   const handleAddService = () => {
     setServices([
       ...services,
-      { typeService: "", price: "", observations: "" },
+      { serviceType: "", price: 0, observations: "" },
     ]);
   };
 
@@ -86,82 +115,98 @@ export default function Servicio({ title }) {
   const handleServiceChange = (index, event) => {
     const { name, value } = event.target;
     const newServices = [...services];
-    if (name === "typeService") {
-      const selectedTypeService = typeService.find(
-        (type) => type.id === parseInt(value),
+    
+    // Si el campo es "serviceType", se actualiza el serviceTypeId
+    if (name === "serviceType") {
+      const selectedServiceType = serviceType.find(
+        (type) => type.id === parseInt(value)
       );
       newServices[index] = {
         ...newServices[index],
-        typeServiceId: selectedTypeService.id,
-        typeService: selectedTypeService.denomination,
+        serviceTypeId: selectedServiceType?.id, // Validación segura
+        serviceType: selectedServiceType?.denomination, // Denominación segura
       };
-    } else {
-      newServices[index] = { ...newServices[index], [name]: value };
     }
+    
+    
+    // Actualiza el estado de los servicios
     setServices(newServices);
   };
+  
 
   const onSubmit = async (e) => {
-    e.preventDefault();
-    const currentDate = new Date().toISOString().split("T")[0];
-
-    if (date > currentDate) {
+    e.preventDefault(); // Prevenir el envío del formulario
+    console.log("Iniciando validación del formulario...");
+  
+    const currentTimestamp = Date.now(); // Fecha y hora actual en timestamp
+    const selectedTimestamp = date; // Ya tienes el timestamp almacenado
+  
+    console.log("Fecha seleccionada (timestamp):", selectedTimestamp);
+    console.log("Fecha actual (currentTimestamp):", currentTimestamp);
+  
+    if (selectedTimestamp < currentTimestamp) {
+      console.error("Error: La fecha no puede ser mayor a la actual");
       setErrors((prevErrors) => ({
         ...prevErrors,
         date: "La fecha no puede ser mayor a la actual",
       }));
-      return;
-    } else {
-      setErrors((prevErrors) => ({ ...prevErrors, date: "" }));
+      return; // Finaliza si la validación falla
     }
-
+  
     if (!selectedCustomer) {
+      console.error("Error: No se seleccionó un cliente");
       setErrors((prevErrors) => ({
         ...prevErrors,
         customer: "Debe seleccionar un cliente",
       }));
-      return;
-    } else {
-      setErrors((prevErrors) => ({ ...prevErrors, customer: "" }));
+      return; // Finaliza si no hay cliente seleccionado
     }
-
-    const newServicesErrors = services.map((item) => {
+  
+    const newServicesErrors = services.map((item, index) => {
       const itemErrors = {};
-      if (!item.typeService)
-        itemErrors.typeService = "Debe seleccionar un tipo de servicio";
-      if (!item.price) itemErrors.price = "Debe ingresar un precio";
+      if (!item.serviceType) {
+        itemErrors.serviceType = "Debe seleccionar un tipo de servicio";
+        console.error(`Error en el servicio ${index}: Falta el tipo de servicio`);
+      }
+      if (!item.price) {
+        itemErrors.price = "Debe ingresar un precio";
+        console.error(`Error en el servicio ${index}: Falta el precio`);
+      }
       return itemErrors;
     });
-
+  
     if (newServicesErrors.some((item) => Object.keys(item).length !== 0)) {
+      console.error("Errores en los servicios:", newServicesErrors);
       setErrors((prevErrors) => ({
         ...prevErrors,
         services: newServicesErrors,
       }));
-      return;
-    } else {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        services: Array(services.length).fill({
-          typoService: "",
-          price: "",
-        }),
-      }));
+      return; // Finaliza si hay errores en los servicios
     }
-
+  
+    // Si todas las validaciones son correctas, llega aquí
+    console.log("Validaciones completas, preparando data...");
+    const selectedCustomerObject = customersList.find((cust) => cust.id === Number(selectedCustomer));
+    
     const data = {
       ...service,
-      documentDate: date,
-      customer: selectedCustomer,
-      itemList: services.map((item) => ({
-        ...item,
-        typeServiceId: item.typeServiceId,
+      registrationTimestamp: selectedTimestamp, 
+      customer: selectedCustomerObject,
+      total: parseFloat(total), //Agregamos el total para almacenarlo
+      serviceItems: services.map((item) => ({
+        observation: item.observations,
+        serviceType: { id: item.serviceTypeId },
+        price: parseFloat(item.price), 
       })),
     };
-
-    await newService(data);
-    navegation("/servicioList");
+    
+    console.log("Datos enviados al backend:", data);
+    console.log(data.serviceItems)
+    await newService(data); // Envía la data a la API
+    navegation("/service-list"); // Redirige después del envío
   };
+  
+  
 
   return (
     <div className="container">
@@ -173,10 +218,10 @@ export default function Servicio({ title }) {
       <form onSubmit={onSubmit}>
         <div className="mb-3">
           <div>
-            <label htmlFor="listaClientes">Selecciona un cliente: </label>
+            <label htmlFor="customer-list">Selecciona un cliente: </label>
             <br />
             <select
-              id="listaClientes"
+              id="customer-list"
               value={selectedCustomer} // Usamos la variable correctamente como string
               onChange={(e) => setSelectedCustomer(e.target.value)}
             >
@@ -194,13 +239,17 @@ export default function Servicio({ title }) {
           </div>
 
           <div>
-            <label htmlFor="fecha">Fecha: </label>
+            <label htmlFor="date">Fecha: </label>
             <br />
             <input
               type="date"
               id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+              value={new Date(date).toISOString().split("T")[0]} // Convertir timestamp a string ISO y tomar solo la fecha
+              onChange={(e) => {
+                const selectedDate = e.target.value; // Fecha en formato "YYYY-MM-DD"
+                const timestamp = new Date(selectedDate + "T00:00:00Z").getTime(); // Convertir a timestamp
+                setDate(timestamp); // Guardar como timestamp
+              }}
             />
             {errors.fecha && <div className="error">{errors.date}</div>}
           </div>
@@ -210,66 +259,82 @@ export default function Servicio({ title }) {
         <hr />
 
         <div className="container text-center">
-          <div className="row">
-            <div className="col">Tipo de Servicio</div>
-            <div className="col">Precio</div>
-            <div className="col">Observaciones</div>
-          </div>
-        </div>
-
-        {services.map((service, index) => (
-          <div key={index}>
-            <select
-              name="typeService"
-              value={service.typeServiceId || ""} // Aquí usas tipoServicioId
-              onChange={(e) => handleServiceChange(index, e)}
-            >
-              <option value="">Seleccione un tipo de servicio</option>
-              {typeService.map((type) => (
-                <option key={type.id} value={type.id}>
-                  {type.denominacion}
-                </option> // El value es el ID
+          <table className="table table-bordered">
+            <thead>
+              <tr>
+                <th>Tipo de Servicio</th>
+                <th>Precio</th>
+                <th>Observaciones</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {services.map((service, index) => (
+                <tr key={index}>
+                  <td>
+                    <select
+                      name="serviceType"
+                      value={service.serviceTypeId || ""}
+                      onChange={(e) => handleServiceChange(index, e)}
+                    >
+                      <option value="">Seleccione un tipo de servicio</option>
+                      {serviceType.length > 0 ? (
+                        serviceType.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.denomination}
+                          </option>
+                        ))
+                      ) : (
+                        <option>Cargando tipos de servicio...</option>
+                      )}
+                    </select>
+                    {errors.services[index]?.serviceType && (
+                      <div className="error">
+                        {errors.services[index].serviceType}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      name="price"
+                      value={service.price}
+                      onChange={(e) => handleServiceChange(index, e)}
+                    />
+                    {errors.services[index]?.price && (
+                      <div className="error">{errors.services[index].price}</div>
+                    )}
+                  </td>
+                  <td>
+                    <input
+                      type="text"
+                      name="observations"
+                      value={service.observations}
+                      onChange={(e) => handleServiceChange(index, e)}
+                    />
+                  </td>
+                  <td>
+                    
+                    <button type="button" onClick={() => handleRemoveService(index)}>
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
               ))}
-            </select>
-            {errors.services[index]?.typeService && (
-              <div className="error">
-                {errors.services[index].typeService}
-              </div>
-            )}
-
-            <label>Precio:</label>
-            <input
-              type="number"
-              name="price"
-              value={service.precio}
-              onChange={(e) => handleServiceChange(index, e)}
-            />
-            {errors.services[index]?.price && (
-              <div className="error">{errors.services[index].price}</div>
-            )}
-
-            <label>Observaciones:</label>
-            <input
-              type="text"
-              name="observations"
-              value={service.observations}
-              onChange={(e) => handleServiceChange(index, e)}
-            />
-            <button type="button" onClick={() => handleRemoveService(index)}>
-              Eliminar
-            </button>
-          </div>
-        ))}
-
+            </tbody>
+          </table>
+        </div>
         <button type="button" onClick={handleAddService}>
           Agregar Servicio
         </button>
 
+        
+
         <div>
-          <h4>Total: {total}</h4>
+          <h4>Total: {total.toLocaleString('es-AR')}</h4>
         </div>
 
-        <button type="submit">Guardar</button>
+        <button type="submit" color="red">Guardar</button>
       </form>
     </div>
   );

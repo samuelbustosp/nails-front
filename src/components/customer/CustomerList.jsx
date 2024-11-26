@@ -1,13 +1,12 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ITEMS_PER_PAGE, API_URL } from "../App.config";
-import { ClienteContext } from "./ClienteContext";
-import { obtenerClientes, eliminarCliente } from "../Services/ClienteService";
+import { ITEMS_PER_PAGE, API_URL } from "../../configuration/app.config";
 import { CustomerContext } from "../../contexts/CustomerContext";
-import { deleteCustomer, getCustomers } from "../../Services/CustomerService";
+import { deleteCustomer, getCustomer, getCustomersForCombo } from "../../Services/CustomerService";
 
-export default function ListadoCliente() {
+
+export default function CustomerList() {
   const { customers, setCustomers } = useContext(CustomerContext);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -20,23 +19,24 @@ export default function ListadoCliente() {
 
   useEffect(() => {
     getData();
-  }, [page, pageSize, query]);
+  },[]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
   const getData = async () => {
-    console.log("carga " + page);
-    getCustomers(query, page, pageSize)
-      .then((response) => {
-        setCustomers(response.content);
-        setTotalPages(response.totalPages);
-      })
-      .catch((error) => {
-        console.error("Error fetching items:", error);
-      });
+    try {
+      const response = await getCustomer();
+      console.log("Respuesta del servidor:", response);
+      console.log("Customers:", customers);
+      setCustomers(response);
+      setTotalPages(response.totalPages);
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
   };
+  
 
   const handleQueryChange = (e) => {
     setQuery(e.target.value);
@@ -66,7 +66,9 @@ export default function ListadoCliente() {
   };
 
   const sortedData = () => {
-    const sorted = [...customers];
+    // Aseguramos que 'customers' sea siempre un array, incluso si es null o undefined
+    const sorted = Array.isArray(customers) ? [...customers] : [];
+    
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -78,8 +80,10 @@ export default function ListadoCliente() {
         return 0;
       });
     }
+    
     return sorted;
   };
+  
   ///////////////////////////////////////Hasta aca para el orden de las tablas///////////////////////////////////////////////////
 
   return (
@@ -103,7 +107,7 @@ export default function ListadoCliente() {
         </div>
         <div className="col-1">
           <button
-            onClick={() => getDatos()}
+            onClick={() => getData()}
             className="btn btn-outline-success"
             type="submit"
           >
@@ -123,25 +127,25 @@ export default function ListadoCliente() {
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("razonSocial")}>
+            <th scope="col" onClick={() => handleSort("businessName")}>
               Apellido y Nombre
-              {sortConfig.key === "razonSocial" && (
+              {sortConfig.key === "businessName" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("celular")}>
+            <th scope="col" onClick={() => handleSort("phoneNumber")}>
               Cel
-              {sortConfig.key === "celular" && (
+              {sortConfig.key === "phoneNumber" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
               )}
             </th>
-            <th scope="col" onClick={() => handleSort("mail")}>
+            <th scope="col" onClick={() => handleSort("email")}>
               Mail
-              {sortConfig.key === "mail" && (
+              {sortConfig.key === "email" && (
                 <span>
                   {sortConfig.direction === "ascending" ? " 🔽" : " 🔼"}
                 </span>
@@ -156,14 +160,14 @@ export default function ListadoCliente() {
             sortedData().map((customer, index) => (
               <tr key={index}>
                 <th scope="row">{customer.id}</th>
-                <td>{customer.razonSocial}</td>
-                <td>{customer.celular}</td>
-                <td>{customer.mail}</td>
+                <td>{customer.businessName}</td>
+                <td>{customer.phoneNumber}</td>
+                <td>{customer.email}</td>
 
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/cliente/${cliente.id}`}
+                      to={`/customer/${customer.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       Editar
@@ -186,7 +190,7 @@ export default function ListadoCliente() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/cliente`} className="btn btn-success btn-sm me-3">
+          <Link to={`/customer`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

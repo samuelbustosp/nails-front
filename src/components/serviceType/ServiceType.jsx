@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import {
   newServiceType,
   getServiceType,
-} from "../../Services/ServiceTypeService";
+} from "../../services/ServiceTypeService";
 
 export default function ServiceType({ title }) {
   let navegation = useNavigate();
@@ -38,7 +38,7 @@ export default function ServiceType({ title }) {
     e.preventDefault();
     newServiceType(serviceType);
     // Redirigimos a la pagina de inicio
-    navegation("/tipoServicioList");
+    navegation("/service-type-list");
   };
 
   return (
@@ -72,7 +72,7 @@ export default function ServiceType({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/tipoServicioList" className="btn btn-info btn-sm me-3">
+            <a href="/service-type-list" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>

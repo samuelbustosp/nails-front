@@ -10,12 +10,12 @@ export default function Customer({ title }) {
   const { id } = useParams();
 
   const [customer, setCustomer] = useState({
-    razonSocial: "",
-    celular: "",
-    mail: "",
+    businessName: "",
+    phoneNumber: "",
+    email: "",
   });
 
-  const { razonSocial, celular, mail } = customer;
+  const { businessName, phoneNumber, email } = customer;
 
   useEffect(() => {
     loadCustomer();
@@ -25,9 +25,9 @@ export default function Customer({ title }) {
     console.log(id);
     if (id > 0) {
       console.log(id);
-      const resultado = await getCustomerById(id);
-      console.log(resultado);
-      setCustomer(resultado);
+      const response = await getCustomerById(id);
+      console.log(response);
+      setCustomer(response);
     }
   };
 
@@ -38,15 +38,27 @@ export default function Customer({ title }) {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const urlBase = "http://localhost:8080/nails/clientes";
+    const urlBase = "http://localhost:8080/nails/customer";
+    console.log("Enviando los datos: ", customer); // Verifica el objeto customer
+  
     if (id > 0) {
-      await axios.put(`${urlBase}/${id}`, customer);
+      try {
+        await axios.put(`${urlBase}/${id}`, customer);
+      } catch (error) {
+        console.error("Error al actualizar el cliente:", error);
+      }
     } else {
-      await axios.post(urlBase, customer);
+      try {
+        await axios.post(urlBase, customer);
+      } catch (error) {
+        console.error("Error al crear el cliente:", error);
+      }
     }
-    // Redirigimos a la pagina de inicio
-    navegation("/clienteList");
+  
+    // Redirigimos a la página de inicio
+    navegation("/customer-list");
   };
+  
 
   return (
     <div className="container">
@@ -57,48 +69,48 @@ export default function Customer({ title }) {
 
       <form onSubmit={(e) => onSubmit(e)}>
         <div className="mb-3">
-          <label htmlFor="razonSocial" className="form-label">
+          <label htmlFor="businessName" className="form-label">
             {" "}
             Apellido Nombre
           </label>
           <input
             type="text"
             className="form-control"
-            id="razonSocial"
-            name="razonSocial"
+            id="businessName"
+            name="businessName"
             required={true}
-            value={razonSocial}
+            value={businessName}
             onChange={(e) => onInputChange(e)}
           />
         </div>
 
         <div className="mb-3">
-          <label htmlFor="celular" className="form-label">
+          <label htmlFor="phoneNumber" className="form-label">
             {" "}
             celular
           </label>
           <input
-            type="number"
+            type="text"
             className="form-control"
-            id="celular"
-            name="celular"
+            id="phoneNumber"
+            name="phoneNumber"
             required={true}
-            value={celular}
+            value={phoneNumber}
             onChange={(e) => onInputChange(e)}
           />
         </div>
 
         <div className="mb-3">
-          <label htmlFor="mail" className="form-label">
+          <label htmlFor="email" className="form-label">
             {" "}
             mail
           </label>
           <input
             type="email"
             className="form-control"
-            id="mail"
-            name="mail"
-            value={mail}
+            id="email"
+            name="email"
+            value={email}
             onChange={(e) => onInputChange(e)}
           />
         </div>
@@ -110,7 +122,7 @@ export default function Customer({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/clienteList" className="btn btn-info btn-sm me-3">
+            <a href="/customer-list" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>

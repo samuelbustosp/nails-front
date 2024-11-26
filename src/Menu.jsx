@@ -23,7 +23,7 @@ export default function Menu() {
           <div className="collapse navbar-collapse" id="navbarNavDropdown">
             <ul className="navbar-nav">
               <li className="nav-item">
-                <a className="nav-link active" aria-current="page" href="#">
+                <a className="nav-link active" aria-current="page" href="/">
                   Home
                 </a>
               </li>
@@ -41,35 +41,35 @@ export default function Menu() {
                 <ul className="dropdown-menu">
                   <li className="nav-item">
                     {" "}
-                    <Link className="nav-link" to="/clienteList">
+                    <Link className="nav-link" to="/customer-list">
                       {" "}
                       Cliente{" "}
                     </Link>
                   </li>
                   <li className="nav-item">
                     {" "}
-                    <Link className="nav-link" to="/lineaList">
+                    <Link className="nav-link" to="/line-list">
                       {" "}
                       Linea{" "}
                     </Link>
                   </li>
                   <li className="nav-item">
                     {" "}
-                    <Link className="nav-link" to="/articuloList">
+                    <Link className="nav-link" to="/item-list">
                       {" "}
                       Articulo{" "}
                     </Link>
                   </li>
                   <li className="nav-item">
                     {" "}
-                    <Link className="nav-link" to="/tipoServicioList">
+                    <Link className="nav-link" to="/service-type-list">
                       {" "}
                       Tipo Servicio{" "}
                     </Link>
                   </li>
                   <li className="nav-item">
                     {" "}
-                    <Link className="nav-link" to="/servicioList">
+                    <Link className="nav-link" to="/service-list">
                       {" "}
                       Servicio{" "}
                     </Link>

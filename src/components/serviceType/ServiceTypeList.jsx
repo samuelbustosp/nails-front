@@ -1,12 +1,13 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../../configuration/App.config";
 import { ServiceTypeContext } from "../../contexts/TypeServiceContext";
 import {
   deleteServiceType,
-  getServicesTypes,
-} from "../../Services/ServiceTypeService";
+  getServiceType,
+  
+} from "../../services/ServiceTypeService";
 
 export default function ServiceTypeList() {
   const { servicesTypes, setServicesTypes } = useContext(ServiceTypeContext);
@@ -22,16 +23,16 @@ export default function ServiceTypeList() {
 
   useEffect(() => {
     getData();
-  }, [page, pageSize, query]);
+  }, []);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
   const getData = async () => {
-    getServicesTypes(query, page, pageSize)
+    getServiceType()
       .then((response) => {
-        setServicesTypes(response.content);
+        setServicesTypes(response);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -66,7 +67,7 @@ export default function ServiceTypeList() {
   };
 
   const sortedData = () => {
-    const sorted = [...servicesTypes];
+    const sorted = Array.isArray(servicesTypes) ? [...servicesTypes] : [];
     if (sortConfig.key !== null) {
       sorted.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -147,7 +148,7 @@ export default function ServiceTypeList() {
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/tipoServicio/${serviceType.id}`}
+                      to={`/service-type/${serviceType.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -178,7 +179,7 @@ export default function ServiceTypeList() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/tipoServicio`} className="btn btn-success btn-sm me-3">
+          <Link to={`/service-type`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

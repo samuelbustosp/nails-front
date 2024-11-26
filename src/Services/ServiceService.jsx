@@ -1,7 +1,7 @@
 import axios from "axios";
-import { API_URL } from "../App.config";
+import { API_URL } from "../configuration/App.config";
 
-const urlBase = API_URL + "/serviciosPageQuery";
+const urlBase = API_URL + "/servicePageQuery";
 
 // Obtener una lista paginada de servicios
 export async function getServices(query, page, pageSize) {
@@ -22,7 +22,7 @@ export async function getServiceById(id) {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/servicio/${id}`,
+      url: `${API_URL}/service/${id}`,
     });
     return data;
   } catch (error) {
@@ -37,14 +37,14 @@ export async function newService(service) {
     if (service.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/servicios/${service.id}`,
+        url: `${API_URL}/service/${service.id}`,
         data: service,
       });
       return data;
     } else {
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/servicios`,
+        url: `${API_URL}/service`,
         data: service,
       });
       return data;
@@ -59,8 +59,8 @@ export async function newService(service) {
 export async function deleteService(id) {
   try {
     const { data } = await axios({
-      method: "PUT",
-      url: `${API_URL}/servicioEliminar/${id}`,
+      method: "DELETE",
+      url: `${API_URL}/service/${id}`,
     });
     return data;
   } catch (error) {

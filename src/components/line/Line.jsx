@@ -38,7 +38,7 @@ export default function Line({ title }) {
     e.preventDefault();
     newLine(line);
     // Redirigimos a la pagina de inicio
-    navegation("/lineaList");
+    navegation("/line-list");
   };
 
   return (
@@ -57,8 +57,8 @@ export default function Line({ title }) {
           <input
             type="text"
             className="form-control"
-            id="denominacion"
-            name="denominacion"
+            id="denomination"
+            name="denomination"
             required={true}
             value={denomination}
             onChange={(e) => onInputChange(e)}
@@ -72,7 +72,7 @@ export default function Line({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/lineaList" className="btn btn-info btn-sm me-3">
+            <a href="/line-list" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>

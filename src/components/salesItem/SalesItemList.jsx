@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
-import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../App.config";
+import { IMAGEN_EDIT, IMAGEN_DELETE, ITEMS_PER_PAGE } from "../../configuration/app.config";
 import { Link } from "react-router-dom";
 
 import {
   getSalesItem,
   deleteSalesItem,
 } from "../../Services/SalesItemService";
-import { ArticuloVentaContext } from "./ArticuloVentaContext";
+import { SalesItemContext } from "../../contexts/SalesItemContext";
 
 export default function SalesItemList() {
-  const { items, setItems } = useContext(ArticuloVentaContext);
+  const { items, setItems } = useContext(SalesItemContext);
 
   const [query, setQuery] = useState("");
 
@@ -24,17 +24,17 @@ export default function SalesItemList() {
 
   useEffect(() => {
     getItems();
-  }, [page, pageSize, query]);
+  }, []);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
   const getItems = async () => {
-    console.log("carga " + page);
-    getSalesItem(query, page, pageSize)
+    getSalesItem()
       .then((response) => {
-        setItems(response.content);
+        console.log(response)
+        setItems(response);
         setTotalPages(response.totalPages);
       })
       .catch((error) => {
@@ -48,8 +48,8 @@ export default function SalesItemList() {
 
   const handleDeleteItem = async (id) => {
     try {
-      const eliminacionExitosa = await deleteSalesItem(id);
-      if (eliminacionExitosa) {
+      const response = await deleteSalesItem(id);
+      if (response) {
         getItems();
       } else {
         console.error("Error al eliminar el articulo");
@@ -151,7 +151,7 @@ export default function SalesItemList() {
                 <td className="text-center">
                   <div>
                     <Link
-                      to={`/articulo/${item.id}`}
+                      to={`/item/${item.id}`}
                       className="btn btn-link btn-sm me-3"
                     >
                       <img
@@ -182,7 +182,7 @@ export default function SalesItemList() {
 
       <div className="row d-md-flex justify-content-md-end">
         <div className="col-4">
-          <Link to={`/articulo`} className="btn btn-success btn-sm me-3">
+          <Link to={`/item`} className="btn btn-success btn-sm me-3">
             Nuevo
           </Link>
         </div>

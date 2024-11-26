@@ -1,8 +1,8 @@
 import axios from "axios";
-import { API_URL } from "../App.config";
+import { API_URL } from "../configuration/App.config";
 
-const urlBase = API_URL + "/articulosPageQuery";
-export async function getSalesItem(consulta, page, pageSize) {
+const urlBase = API_URL;
+export async function getSalesItems(consulta, page, pageSize) {
   try {
     const { data } = await axios({
       method: "GET",
@@ -15,11 +15,24 @@ export async function getSalesItem(consulta, page, pageSize) {
   }
 }
 
+export async function getSalesItem() {
+  try {
+    const { data } = await axios({
+      method: "GET",
+      url: `${urlBase}/item`,
+    });
+    return data;
+  } catch (error) {
+    console.error("Error buscando articulos:", error);
+    throw error;
+  }
+}
+
 export async function getSalesItemById(id) {
   try {
     const { data } = await axios({
       method: "GET",
-      url: `${API_URL}/articulos/${id}`,
+      url: `${API_URL}/item/${id}`,
     });
     return data;
   } catch (error) {
@@ -33,13 +46,13 @@ export async function newSalesItem(model) {
     if (model.id > 0) {
       const { data } = await axios({
         method: "PUT",
-        url: `${API_URL}/articulos/${model.id}`,
+        url: `${API_URL}/item/${model.id}`,
         data: model,
       });
     } else {
       const { data } = await axios({
         method: "POST",
-        url: `${API_URL}/articulos`,
+        url: `${API_URL}/item`,
         data: model,
       });
     }
@@ -61,9 +74,9 @@ export async function newSalesItem(model) {
 }
 
 export async function deleteSalesItem(id) {
-  const urlBase = API_URL + "/articulosEliminar";
+  const urlBase = API_URL + "/item";
   const { data } = await axios({
-    method: "PUT",
+    method: "DELETE",
     url: `${urlBase}/${id}`,
   });
   return true;

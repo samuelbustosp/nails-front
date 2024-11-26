@@ -5,16 +5,16 @@ import {
   getSalesItemById,
 } from "../../Services/SalesItemService";
 
-import { obtenerLineas2 } from "../../Services/LineService";
+import { getLine } from "../../Services/LineService";
 
 export default function SalesItem({ title }) {
-  let navegacion = useNavigate();
+  let navegation = useNavigate();
 
   const { id } = useParams();
 
   const [item, setItem] = useState({
     denomination: "",
-    line: 0,
+    line: {},
   });
 
   const [lineList, setLineList] = useState([]);
@@ -22,23 +22,14 @@ export default function SalesItem({ title }) {
   const { denomination, line } = item;
 
   useEffect(() => {
-    cargarModel();
+    console.log("entra")
     cargarLineas();
   }, []);
 
-  const cargarModel = async () => {
-    if (id > 0) {
-      console.log(id);
-      const resultado = await getSalesItemById(id);
-      setItem(resultado);
-      setSelectedLine(resultado.line);
-    }
-  };
-
   const cargarLineas = async () => {
-    console.log(id);
-    const resultado = await obtenerLineas2();
-    setLineList(resultado);
+    const response = await getLine();
+    console.log(response);
+    setLineList(response);
   };
 
   const onInputChange = ({ target: { name, value } }) => {
@@ -48,16 +39,28 @@ export default function SalesItem({ title }) {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+  
+    // Encuentra el objeto completo de la línea seleccionada
+    const selectedLineObject = lineList.find((line) => line.id === Number(selectedLine));
+  
+    if (!selectedLineObject) {
+      console.error("No se encontró la línea seleccionada.");
+      return;
+    }
+  
+    // Construye el objeto `data` con el objeto completo de línea
     const data = {
       ...item,
-      line: selectedLine, // Asumiendo que la línea seleccionada es el id de la línea
+      line: selectedLineObject, // Pasa el objeto completo aquí
     };
-    window.alert("id linea" + selectedLine);
-    newSalesItem(data);
-    // Redirigimos a la pagina de inicio
-    navegacion("/articuloList");
+  
+    console.log("data", data);
+    await newSalesItem(data); // Asegúrate de esperar a que la operación termine
+  
+    // Redirige a la lista de artículos
+    navegation("/item-list");
   };
+  
 
   return (
     <div className="container">
@@ -68,23 +71,23 @@ export default function SalesItem({ title }) {
 
       <form onSubmit={(e) => onSubmit(e)}>
         <div className="mb-3">
-          <label htmlFor="denominacion" className="form-label">
+          <label htmlFor="denomination" className="form-label">
             {" "}
             Denominacion
           </label>
           <input
             type="text"
             className="form-control"
-            id="denominacion"
-            name="denominacion"
+            id="denomination"
+            name="denomination"
             required={true}
             value={denomination}
             onChange={(e) => onInputChange(e)}
           />
 
-          <label htmlFor="listaLineas">Selecciona una linea:</label>
+          <label htmlFor="line-list">Selecciona una linea:</label>
           <select
-            id="listaLineas"
+            id="line-list"
             value={selectedLine}
             required={true}
             onChange={(e) => setSelectedLine(e.target.value)}
@@ -105,7 +108,7 @@ export default function SalesItem({ title }) {
             </button>
           </div>
           <div className="col-4">
-            <a href="/articuloList" className="btn btn-info btn-sm me-3">
+            <a href="/sales-item-list" className="btn btn-info btn-sm me-3">
               Regresar
             </a>
           </div>
